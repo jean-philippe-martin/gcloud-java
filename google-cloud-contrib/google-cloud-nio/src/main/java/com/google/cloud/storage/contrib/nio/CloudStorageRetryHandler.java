@@ -144,7 +144,10 @@ public class CloudStorageRetryHandler {
    * @return true if exs is a retryable error, otherwise false
    */
   static boolean isRetryable(final StorageException exs) {
-    return exs.isRetryable() || exs.getCode() == 500 || exs.getCode() == 503;
+    // Yes one wouldn't necessarily think of 403 as retriable,
+    // but see https://github.com/broadinstitute/gatk/issues/3735
+    // for reports of 403 being returned in cases when retrying works.
+    return exs.isRetryable() || exs.getCode() == 403 || exs.getCode() == 500 || exs.getCode() == 503;
   }
 
   /**

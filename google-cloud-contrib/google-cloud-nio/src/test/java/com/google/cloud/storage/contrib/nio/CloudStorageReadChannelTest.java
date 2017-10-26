@@ -95,6 +95,18 @@ public class CloudStorageReadChannelTest {
   }
 
   @Test
+  public void testReadRetryOn403() throws IOException {
+    ByteBuffer buffer = ByteBuffer.allocate(1);
+    when(gcsChannel.read(eq(buffer)))
+        .thenThrow(new StorageException(403, "Forbidden."))
+        .thenReturn(1);
+    assertThat(chan.position()).isEqualTo(0L);
+    assertThat(chan.read(buffer)).isEqualTo(1);
+    assertThat(chan.position()).isEqualTo(1L);
+    verify(gcsChannel, times(2)).read(any(ByteBuffer.class));
+  }
+
+  @Test
   public void testReadRetrySSLHandshake() throws IOException {
     ByteBuffer buffer = ByteBuffer.allocate(1);
     when(gcsChannel.read(eq(buffer)))
